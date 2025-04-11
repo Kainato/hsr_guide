@@ -1,5 +1,6 @@
 import 'package:get/get.dart';
 
+import '../../../../class/personagem.dart';
 import '../../../../core/fetch_sheet.dart';
 
 class HomeController extends GetxController {
@@ -19,22 +20,25 @@ class HomeController extends GetxController {
   //   super.onClose();
   // }
 
-  List<Map<String, String>> data = [];
+  List<Personagem> data = [];
 
   Future<void> fetchGoogleSheetData() async {
     try {
       // Chama a função de fetch e processa os dados
-      final sheetData = await fetchGoogleSheetDataFromApi();
-      data =
-          sheetData.map<Map<String, String>>((row) {
-            return {
-              'name': row[0] ?? 'No Name', // Coluna 1
-              'description': row[1] ?? 'No Description', // Coluna 2
-            };
-          }).toList();
-      update(); // Atualiza o estado do controlador
-    } catch (e) {
-      print('Erro ao buscar dados: $e');
+      await fetchGoogleSheetDataFromApi().then((response) {
+        if (response.isEmpty) {
+          throw Exception('Nenhum dado encontrado na planilha.');
+        } else {
+          // Limpa a lista antes de adicionar novos dados
+          data.clear();
+          // Converte os dados para uma lista de Personagem
+          for (Map<String, dynamic> personagem in response) {
+            data.add(Personagem.fromMap(personagem));
+          }
+        }
+      });
+    } catch (e, s) {
+      throw Exception('Erro ao buscar dados da planilha: $e - $s');
     }
   }
 }
